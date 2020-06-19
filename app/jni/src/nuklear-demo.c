@@ -39,38 +39,65 @@ char test[] = "A long time ago, in a galaxy far, far away, "
 
 void render_gui(struct nk_context *ctx, SDL_Window *win, int w, int h, int dpi) {
     /* GUI */
-    int RH = h/10;
-    if (nk_begin(ctx, "Demo", nk_rect(0, 0, w, h), NK_WINDOW_NO_SCROLLBAR))
+    enum {EASY, HARD};
+    static int op = EASY;
+    static float value = 0.6f;
+    static int i =  20;
+    static int size = 4;
+    if (nk_begin(ctx, "Demo", nk_rect(50, 50, 220*size, 220*size), NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE))
     {
-        enum {EASY, HARD, VHARD};
-        static int op = EASY;
-
-        nk_layout_row_dynamic(ctx, RH, 1);
-        if (nk_button_label(ctx, "button"))
-            __android_log_print(ANDROID_LOG_INFO, "sdltest", "button pressed");
-        nk_layout_row_dynamic(ctx, RH, 3);
+        // fixed widget pixel width
+        nk_layout_row_static(ctx, 30*size, 80*size, 1);
+        if (nk_button_label(ctx, "button")) {
+            // event handling
+        }
+        // fixed widget window ratio width
+        nk_layout_row_dynamic(ctx, 30*size, 2);
         if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
         if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
-        if (nk_option_label(ctx, "very hard", op == VHARD)) op = VHARD;
-
-        nk_layout_row_dynamic(ctx, RH, 1);
-        nk_flags event = nk_edit_string_zero_terminated(ctx, NK_EDIT_FIELD, buf, 256, 0);
-        if (event & NK_EDIT_ACTIVATED) {
-            SDL_StartTextInput();
+        // custom widget pixel width
+        nk_layout_row_begin(ctx, NK_STATIC, 30*size, 2);
+        {
+            nk_layout_row_push(ctx, 50*size);
+            nk_label(ctx, "Volume:", NK_TEXT_LEFT);
+            nk_layout_row_push(ctx, 110*size);
+            nk_slider_float(ctx, 0, &value, 1.0f, 0.1f);
         }
-        if (event & NK_EDIT_DEACTIVATED) {
-            SDL_StopTextInput();
-        }
-
-        nk_layout_row_dynamic(ctx, RH*5, 1);
-        nk_text_wrap(ctx,test, sizeof(test));
-
+        nk_layout_row_end(ctx);
     }
     nk_end(ctx);
 
+// init gui state
+//    enum {EASY, HARD};
+//    static int op = EASY;
+//    static float value = 0.6f;
+//    static int i =  20;
+//    if (nk_begin(ctx, "Show", nk_rect(50, 50, 220, 220),
+//                 NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_CLOSABLE)) {
+//        // fixed widget pixel width
+//        nk_layout_row_static(ctx, 30, 80, 1);
+//        if (nk_button_label(ctx, "button")) {
+//            // event handling
+//        }
+//        // fixed widget window ratio width
+//        nk_layout_row_dynamic(ctx, 30, 2);
+//        if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
+//        if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
+//        // custom widget pixel width
+//        nk_layout_row_begin(ctx, NK_STATIC, 30, 2);
+//        {
+//            nk_layout_row_push(ctx, 50);
+//            nk_label(&ctx, "Volume:", NK_TEXT_LEFT);
+//            nk_layout_row_push(ctx, 110);
+//            nk_slider_float(ctx, 0, &value, 1.0f, 0.1f);
+//        }
+//        nk_layout_row_end(ctx);
+//    }
+//    nk_end(ctx);
 
     /* Draw */
-    {float bg[4];
+    {
+        float bg[4];
         int win_width, win_height;
         nk_color_fv(bg, nk_rgb(0,0,0));
         SDL_GetWindowSize(win, &win_width, &win_height);
@@ -82,8 +109,11 @@ void render_gui(struct nk_context *ctx, SDL_Window *win, int w, int h, int dpi) 
          * defaults everything back into a default state.
          * Make sure to either a.) save and restore or b.) reset your own state after
          * rendering the UI. */
+        __android_log_print(ANDROID_LOG_INFO, "sdltest", "rendering");
         nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-        SDL_GL_SwapWindow(win);}
+        __android_log_print(ANDROID_LOG_INFO, "sdltest", "rendered");
+        SDL_GL_SwapWindow(win);
+    }
 }
 
 
